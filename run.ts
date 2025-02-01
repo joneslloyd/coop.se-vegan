@@ -71,16 +71,6 @@ const translations: Record<string, string> = {
   'Kokta baljväxter 93% (SÖTLUPIN*': 'Cooked legumes 93% (SWEET LUPIN*',
 };
 
-// Function to sanitise and translate ingredients
-const sanitiseIngredients = (ingredients: string | undefined): string => {
-  if (!ingredients) return '';
-  // Remove "INGREDIENSER:" or similar prefixes
-  const cleaned = ingredients.replace(/^[^:]+:\s*/, '');
-  // Get the first ingredient and translate
-  const firstIngredient = cleaned.split(',')[0]?.trim();
-  return translateText(firstIngredient);
-};
-
 // Function to translate text
 const translateText = (text: string): string => {
   return text
@@ -118,8 +108,18 @@ const getMainIngredient = (ingredients: string | undefined): string => {
   return translateText(ingredientList[0] || '');
 };
 
+// Get the input file type from command line arguments
+const inputFileType = process.argv[2] || 'frozen';
+if (!['frozen', 'non-frozen'].includes(inputFileType)) {
+  console.error('Invalid argument. Please use "frozen" or "non-frozen"');
+  process.exit(1);
+}
+
+const inputFileName = `${inputFileType}.json`;
+const outputFileName = `${inputFileType}.xlsx`;
+
 // Read the JSON file
-const jsonData = JSON.parse(fs.readFileSync('food.json', 'utf-8'));
+const jsonData = JSON.parse(fs.readFileSync(inputFileName, 'utf-8'));
 
 // Debug: Log the structure of jsonData
 console.log(jsonData);
@@ -160,6 +160,6 @@ const workbook = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(workbook, worksheet, 'Food Items');
 
 // Write the workbook to an Excel file
-XLSX.writeFile(workbook, 'food_items.xlsx');
+XLSX.writeFile(workbook, outputFileName);
 
-console.log('Excel file generated successfully!');
+console.log(`Excel file ${outputFileName} generated successfully!`);
